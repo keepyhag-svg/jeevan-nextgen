@@ -3,10 +3,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionTemplate } from 'framer-motion';
 import gsap from 'gsap';
-import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User as UserIcon, X } from 'lucide-react';
+import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User as UserIcon, X, Compass, Flame } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import BottomNav from './BottomNav';
 import { useSession, signIn, signOut } from 'next-auth/react';
+
+// ==========================================
+// 1. LIVING BACKGROUND (Floating Neon Orbs)
+// ==========================================
+const LivingBackground = () => (
+  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <motion.div 
+      animate={{ x: [0, 50, 0], y: [0, -50, 0], scale: [1, 1.2, 1] }} 
+      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} 
+      className="absolute top-[10%] left-[10%] w-[30rem] h-[30rem] bg-blue-600/10 rounded-full blur-[120px]" 
+    />
+    <motion.div 
+      animate={{ x: [0, -80, 0], y: [0, 60, 0], scale: [1, 1.5, 1] }} 
+      transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }} 
+      className="absolute bottom-[20%] right-[10%] w-[40rem] h-[40rem] bg-emerald-600/5 rounded-full blur-[150px]" 
+    />
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+  </div>
+);
 
 // ==========================================
 // Word-by-Word Living Text Component
@@ -33,61 +52,111 @@ const AnimatedParagraph = ({ text, className = "" }: { text: string, className?:
 };
 
 // ==========================================
-// AESTHETIC HOME FEED COMPONENT 
+// 2. HERO SECTION & INFINITE TICKER
+// ==========================================
+const HeroSection = () => {
+  return (
+    <div className="relative pt-32 pb-16 flex flex-col items-center justify-center text-center px-6 z-10">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8, filter: "blur(20px)" }} 
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} 
+        transition={{ duration: 1, ease: "easeOut" }} 
+        className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-[0_0_30px_rgba(59,130,246,0.2)]"
+      >
+        <Sparkles size={16} className="text-blue-400 animate-pulse" />
+        <span className="text-xs font-bold text-gray-300 tracking-widest uppercase">Welcome to the Next Generation</span>
+      </motion.div>
+      
+      <motion.h1 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
+        className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 tracking-tight mb-6 leading-tight"
+      >
+        Experience <br/> 
+        <motion.span animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400 bg-[length:200%_auto]">
+          Jeevan Magazine
+        </motion.span>
+      </motion.h1>
+      
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.4 }} className="max-w-xl text-gray-400 text-lg md:text-xl leading-relaxed">
+        Read, discover, and interact with Assamese culture like never before, powered by cutting-edge AI.
+      </motion.p>
+    </div>
+  );
+};
+
+const InfiniteTicker = () => (
+  <div className="w-full overflow-hidden bg-white/5 border-y border-white/10 py-4 z-10 relative flex backdrop-blur-md mb-12">
+    <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="flex whitespace-nowrap gap-12 text-sm font-bold tracking-widest uppercase text-gray-500 pr-12">
+      {[...Array(8)].map((_, i) => (
+        <span key={i} className="flex items-center gap-6">
+          JEEVAN NEXTGEN <Sparkles size={14} className="text-blue-500 animate-pulse"/> 
+          AI SUMMARIES <Zap size={14} className="text-emerald-500 animate-pulse"/> 
+          AESTHETIC UI <Flame size={14} className="text-orange-500 animate-pulse"/>
+        </span>
+      ))}
+    </motion.div>
+  </div>
+);
+
+// ==========================================
+// 3. ENHANCED AESTHETIC HOME FEED
 // ==========================================
 const HomeFeed = ({ articles, onRead, onSummarize }: { articles: any[], onRead: (article: any) => void, onSummarize: (article: any, e: React.MouseEvent) => void }) => {
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="max-w-3xl mx-auto px-6 pt-24 pb-32 space-y-8"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-black text-white tracking-tight">Discover</h1>
-        <Sparkles className="text-blue-500 animate-pulse" />
-      </div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full relative z-10">
+      <HeroSection />
+      <InfiniteTicker />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {articles.map((item, index) => (
-          <motion.div 
-            key={item._id || index}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-10%" }}
-            transition={{ duration: 0.7, delay: index * 0.1 }}
-            className="relative group cursor-pointer rounded-3xl overflow-hidden p-[3px] h-full flex flex-col"
-            onClick={() => onRead(item)}
-          >
-            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-50 blur-xl group-hover:opacity-100 transition-opacity duration-500" />
-            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            <div className="relative z-10 bg-[#0a0a0a] rounded-[21px] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)]">
-              <div className="relative h-56 w-full overflow-hidden shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent z-10" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7, ease: "easeOut" }} src={item.imageUrl || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000&auto=format&fit=crop"} alt={item.title} className="w-full h-full object-cover" />
-                <div className="absolute top-4 left-4 z-20 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                  <span className="text-[10px] font-bold text-gray-200 uppercase tracking-wider">{item.category || "Article"}</span>
-                </div>
-              </div>
+      <div className="max-w-4xl mx-auto px-6 pb-32 space-y-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20"><Compass size={24} className="text-blue-400" /></div>
+          <h2 className="text-3xl font-black text-white tracking-tight">Discover</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {articles.map((item, index) => (
+            <motion.div 
+              key={item._id || index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4 + (index % 3), repeat: Infinity, ease: "easeInOut" }}
+              className="relative group cursor-pointer rounded-3xl overflow-hidden p-[3px] h-full flex flex-col"
+              onClick={() => onRead(item)}
+            >
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-30 blur-xl group-hover:opacity-100 transition-opacity duration-500" />
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
               
-              <div className="p-6 relative z-20 flex-1 flex flex-col justify-between -mt-8">
-                <div><AnimatedParagraph text={item.title} className="text-xl font-bold text-white leading-tight mb-6" /></div>
-                <div className="flex items-center justify-between mt-auto">
-                  <span className="text-sm font-bold text-gray-400 flex items-center gap-2 group-hover:text-white transition-colors">
-                    Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </span>
-                  
-                  <button onClick={(e) => onSummarize(item, e)} className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all">
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" />
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
-                    <div className="relative z-10 bg-[#0a0a0a] hover:bg-blue-900/40 p-2.5 rounded-[9px] transition-colors flex items-center justify-center">
-                      <Zap size={20} className="text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,1)] group-hover/btn:animate-pulse group-hover/btn:text-white transition-colors" />
-                    </div>
-                  </button>
+              <motion.div whileHover={{ scale: 0.98 }} transition={{ duration: 0.4, ease: "easeOut" }} className="relative z-10 bg-[#0a0a0a]/90 backdrop-blur-xl rounded-[21px] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-white/5">
+                <div className="relative h-64 w-full overflow-hidden shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent z-10" />
+                  <motion.img whileHover={{ scale: 1.1 }} transition={{ duration: 0.8, ease: "easeOut" }} src={item.imageUrl || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000&auto=format&fit=crop"} alt={item.title} className="w-full h-full object-cover" />
+                  <div className="absolute top-4 left-4 z-20 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                    <span className="text-[10px] font-bold text-gray-200 uppercase tracking-wider">{item.category || "Article"}</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+                
+                <div className="p-6 relative z-20 flex-1 flex flex-col justify-between -mt-12">
+                  <div><AnimatedParagraph text={item.title} className="text-2xl font-bold text-white leading-tight mb-6" /></div>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-sm font-bold text-gray-400 flex items-center gap-2 group-hover:text-white transition-colors">
+                      Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    
+                    <button onClick={(e) => onSummarize(item, e)} className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] transition-all">
+                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" />
+                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
+                      <div className="relative z-10 bg-[#0a0a0a] group-hover/btn:bg-transparent p-2.5 rounded-[9px] transition-colors flex items-center justify-center">
+                        <Zap size={20} className="text-blue-400 group-hover/btn:text-white transition-colors" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </motion.div>
   );
@@ -136,15 +205,18 @@ export default function AppContainer() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: fullText })
       });
+      
       const data = await res.json();
       
-      if (data.summary) {
+      // THIS IS THE FIX: We now strictly catch the error Google sends back
+      if (res.ok && data.summary) {
          setAiModal({ isOpen: true, isLoading: false, text: data.summary, title: article.title });
       } else {
-         setAiModal({ isOpen: true, isLoading: false, text: "Failed to generate summary.", title: article.title });
+         const errorMessage = data.error || `Server Error ${res.status}: Failed to generate summary.`;
+         setAiModal({ isOpen: true, isLoading: false, text: `ERROR: ${errorMessage}`, title: article.title });
       }
-    } catch (error) {
-       setAiModal({ isOpen: true, isLoading: false, text: "Error communicating with Jeevan AI.", title: article.title });
+    } catch (error: any) {
+       setAiModal({ isOpen: true, isLoading: false, text: `NETWORK ERROR: ${error.message || "Could not reach the API."}`, title: article.title });
     }
   };
 
@@ -161,14 +233,16 @@ export default function AppContainer() {
   }
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
+    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative overflow-x-hidden">
+      <LivingBackground />
+      
       <AnimatePresence mode="wait">
         {activeTab === 'Home' && <HomeFeed key="home" articles={articles} onRead={setSelectedArticle} onSummarize={handleGenerateSummary} />}
-        {activeTab === 'For You' && <div key="foryou" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">For You Algorithm Booting...</h1></div>}
-        {activeTab === 'Jeevan AI' && <div key="ai" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">Jeevan AI Initializing...</h1></div>}
+        {activeTab === 'For You' && <div key="foryou" className="flex items-center justify-center min-h-screen relative z-10"><h1 className="text-2xl text-gray-500 animate-pulse">For You Algorithm Booting...</h1></div>}
+        {activeTab === 'Jeevan AI' && <div key="ai" className="flex items-center justify-center min-h-screen relative z-10"><h1 className="text-2xl text-gray-500 animate-pulse">Jeevan AI Initializing...</h1></div>}
         
         {activeTab === 'Profile' && (
-          <div key="profile" className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
+          <div key="profile" className="flex flex-col items-center justify-center min-h-screen pb-32 px-6 relative z-10">
             {!isLoaded ? (
               <h1 className="text-2xl text-gray-500 animate-pulse">Loading Profile...</h1>
             ) : !isSignedIn ? (
@@ -298,7 +372,7 @@ function LiquidArticle({ article, onSummarize }: { article: any, onSummarize: (a
   };
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white font-sans overflow-hidden selection:bg-blue-500/30 relative pb-32">
+    <div className="min-h-screen bg-[#030303] text-white font-sans overflow-hidden selection:bg-blue-500/30 relative pb-32 z-10">
       <motion.div style={{ scaleX }} className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-teal-400 to-emerald-500 origin-left z-[100]" />
       <motion.div style={{ y: glowY }} className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
       
