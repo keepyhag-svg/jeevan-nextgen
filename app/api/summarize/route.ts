@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req: Request) {
   try {
@@ -13,42 +14,27 @@ export async function POST(req: Request) {
        return NextResponse.json({ error: "API key is missing in Vercel." }, { status: 500 });
     }
 
+    // 1. Initialize the official Google SDK (This bypasses the v1beta URL errors completely)
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // 2. Safely call the standard flash model
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
     const prompt = `You are an intelligent AI assistant for a modern Assamese magazine called Jeevan. Provide a highly engaging, concise 3-4 sentence summary of the following article text. Please write the summary in the same language as the article text provided (Assamese or English). Do not use any introductory phrases, just jump straight into the summary:\n\n${text}`;
 
-    // THE FIX: Added "-latest" to the model name in the URL
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
-      })
-    });
+    // 3. Generate the response securely
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const summary = response.text();
 
-    const data = await response.json();
-
-    if (data.error) {
-        console.error("Google API Error:", data.error);
-        return NextResponse.json({ error: `Google API Error: ${data.error.message}` }, { status: 500 });
-    }
-
-    if (!data.candidates || data.candidates.length === 0) {
-        console.error("AI Blocked or empty:", data);
-        return NextResponse.json({ error: "Google AI blocked the response (possible safety filter trigger)." }, { status: 500 });
-    }
-
-    const summary = data.candidates[0]?.content?.parts?.[0]?.text;
-    
     if (!summary) {
          return NextResponse.json({ error: "AI returned a response, but the text was empty." }, { status: 500 });
     }
 
     return NextResponse.json({ summary });
   } catch (error: any) {
-    console.error("Backend Crash:", error);
-    return NextResponse.json({ error: error.message || "The server crashed while contacting Google." }, { status: 500 });
+    console.error("Backend SDK Crash:", error);
+    // The SDK provides perfectly formatted error messages if anything goes wrong
+    return NextResponse.json({ error: `Google SDK Error: ${error.message}` }, { status: 500 });
   }
 }
