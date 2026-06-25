@@ -1,6 +1,9 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { auth } from "./auth"
 
-export default clerkMiddleware();
+export default auth((req) => {
+  // We will add logic here later if you want to block people from certain pages.
+  // For now, this simply initializes your authentication session globally.
+})
 
 export const config = {
   matcher: [
@@ -9,4 +12,4 @@ export const config = {
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],
-};
+}
