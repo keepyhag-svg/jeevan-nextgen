@@ -21,9 +21,9 @@ export async function POST(req: Request) {
 
     const prompt = `You are an intelligent AI assistant for a modern Assamese magazine called Jeevan. Provide a highly engaging, concise 3-4 sentence summary of the following article text. Please write the summary in the same language as the article text provided (Assamese or English). Do not use any introductory phrases, just jump straight into the summary:\n\n${text}`;
 
-    // Call Cohere's multilingual Command-R model
+    // FIXED: Call Cohere's active multilingual model (command-a)
     const response = await cohere.chat({
-      model: "command-r",
+      model: "command-a",
       message: prompt,
     });
 
