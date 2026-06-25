@@ -7,6 +7,9 @@ import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User } from 'lucide-react'
 import { client } from '../sanity/lib/client'; 
 import BottomNav from './BottomNav';
 
+// CLERK IMPORTS
+import { SignedIn, SignedOut, SignInButton, UserProfile } from '@clerk/nextjs';
+
 // ==========================================
 // Word-by-Word Living Text Component
 // ==========================================
@@ -53,81 +56,32 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.7, delay: index * 0.1 }}
-            // THICKER BORDER: p-[3px] makes the snake wide and juicy
             className="relative group cursor-pointer rounded-3xl overflow-hidden p-[3px] h-full flex flex-col"
             onClick={() => onRead(item)}
           >
-            {/* 1. NEON BLUR EFFECT (Makes it glow outward) */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-50 blur-xl group-hover:opacity-100 transition-opacity duration-500"
-            />
-
-            {/* 2. THE MAIN SHARP SNAKE */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-            />
-
-            {/* 3. INNER CARD BACKGROUND (Adjusted radius to fit the 3px border exactly) */}
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-50 blur-xl group-hover:opacity-100 transition-opacity duration-500" />
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative z-10 bg-[#0a0a0a] rounded-[21px] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)]">
-              
               <div className="relative h-56 w-full overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent z-10" />
-                <motion.img 
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.7, ease: "easeOut" }}
-                  src={item.imageUrl || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000&auto=format&fit=crop"} 
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-                
+                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7, ease: "easeOut" }} src={item.imageUrl || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000&auto=format&fit=crop"} alt={item.title} className="w-full h-full object-cover" />
                 <div className="absolute top-4 left-4 z-20 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                  <span className="text-[10px] font-bold text-gray-200 uppercase tracking-wider">
-                    {item.category || "Article"}
-                  </span>
+                  <span className="text-[10px] font-bold text-gray-200 uppercase tracking-wider">{item.category || "Article"}</span>
                 </div>
               </div>
-
               <div className="p-6 relative z-20 flex-1 flex flex-col justify-between -mt-8">
-                <div>
-                  <AnimatedParagraph text={item.title} className="text-xl font-bold text-white leading-tight mb-6" />
-                </div>
-                
+                <div><AnimatedParagraph text={item.title} className="text-xl font-bold text-white leading-tight mb-6" /></div>
                 <div className="flex items-center justify-between mt-auto">
                   <span className="text-sm font-bold text-gray-400 flex items-center gap-2 group-hover:text-white transition-colors">
                     Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </span>
-
-                  {/* THICK GLOWING AI BUTTON */}
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation(); 
-                      alert("Jeevan AI Summary generation triggered!"); 
-                    }}
-                    // Added intense outer shadow and thick 3px padding
-                    className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all"
-                  >
-                    {/* Blurred inner snake for glow */}
-                    <motion.div 
-                      animate={{ rotate: 360 }} 
-                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }} 
-                      className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" 
-                    />
-                    {/* Sharp inner snake */}
-                    <motion.div 
-                      animate={{ rotate: 360 }} 
-                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }} 
-                      className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" 
-                    />
-                    {/* Button Inside (Dark to contrast the bright glow) */}
+                  <button onClick={(e) => { e.stopPropagation(); alert("Jeevan AI Summary generation triggered!"); }} className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all">
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" />
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
                     <div className="relative z-10 bg-[#0a0a0a] hover:bg-blue-900/40 p-2.5 rounded-[9px] transition-colors flex items-center justify-center">
                       <Zap size={20} className="text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,1)] group-hover/btn:animate-pulse group-hover/btn:text-white transition-colors" />
                     </div>
                   </button>
-
                 </div>
               </div>
             </div>
@@ -149,14 +103,7 @@ export default function AppContainer() {
   useEffect(() => {
     const fetchData = async () => {
       const query = `*[_type == "post"] | order(publishedAt desc) {
-        _id, 
-        title, 
-        englishTitle, 
-        "authorName": author->name, 
-        publishedAt, 
-        body, 
-        englishBody,
-        "imageUrl": mainImage.asset->url
+        _id, title, englishTitle, "authorName": author->name, publishedAt, body, englishBody, "imageUrl": mainImage.asset->url
       }`;
       const data = await client.fetch(query);
       setArticles(data);
@@ -167,10 +114,7 @@ export default function AppContainer() {
   if (selectedArticle) {
     return (
       <div className="relative">
-        <button 
-          onClick={() => setSelectedArticle(null)}
-          className="fixed top-6 left-6 z-[110] bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-xl"
-        >
+        <button onClick={() => setSelectedArticle(null)} className="fixed top-6 left-6 z-[110] bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-xl">
           <ArrowRight size={20} className="rotate-180" />
         </button>
         <LiquidArticle article={selectedArticle} />
@@ -184,7 +128,42 @@ export default function AppContainer() {
         {activeTab === 'Home' && <HomeFeed key="home" articles={articles} onRead={setSelectedArticle} />}
         {activeTab === 'For You' && <div key="foryou" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">For You Algorithm Booting...</h1></div>}
         {activeTab === 'Jeevan AI' && <div key="ai" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">Jeevan AI Initializing...</h1></div>}
-        {activeTab === 'Profile' && <div key="profile" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">Clerk Profile Loading...</h1></div>}
+        
+        {/* ========================================== */}
+        {/* NEW CLERK PROFILE TAB */}
+        {/* ========================================== */}
+        {activeTab === 'Profile' && (
+          <div key="profile" className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
+            
+            {/* If the user is logged out, show the custom login prompt */}
+            <SignedOut>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6 max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <User size={32} className="text-blue-400" />
+                </div>
+                <h2 className="text-3xl font-black text-white">Join Jeevan</h2>
+                <p className="text-gray-400 text-sm leading-relaxed">Sign in to sync your aesthetic feed, save your favorite articles, and chat with Jeevan AI.</p>
+                
+                <SignInButton mode="modal">
+                  <button className="relative overflow-hidden p-[2px] rounded-xl group w-full mt-4 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all">
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
+                    <div className="relative z-10 bg-[#0a0a0a] group-hover:bg-blue-900/40 px-6 py-4 rounded-[10px] transition-colors flex items-center justify-center">
+                      <span className="font-bold text-white tracking-wide">Sign In / Sign Up</span>
+                    </div>
+                  </button>
+                </SignInButton>
+              </motion.div>
+            </SignedOut>
+
+            {/* If the user is logged in, show their full Clerk Profile manager */}
+            <SignedIn>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-4xl mx-auto flex justify-center">
+                <UserProfile />
+              </motion.div>
+            </SignedIn>
+
+          </div>
+        )}
       </AnimatePresence>
 
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -193,7 +172,7 @@ export default function AppContainer() {
 }
 
 // ==========================================
-// YOUR ORIGINAL LIQUID ARTICLE
+// YOUR ORIGINAL LIQUID ARTICLE (Unchanged)
 // ==========================================
 function LiquidArticle({ article }: { article: any }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
