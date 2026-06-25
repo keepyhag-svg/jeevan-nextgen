@@ -15,8 +15,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // We safely hardcode your public key here so it never gets stuck loading
   return (
-    {/* We safely hardcode your public key here so it never gets stuck loading */}
     <ClerkProvider publishableKey="pk_test_aW1tb3J0YWwtYWRrZXItNjYuY2xlcmsuYWNjb3VudHMuZGV2JA">
       <html lang="en">
         <body className={inter.className}>
