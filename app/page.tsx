@@ -3,11 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionTemplate } from 'framer-motion';
 import gsap from 'gsap';
-import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User as UserIcon } from 'lucide-react';
+import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User as UserIcon, X } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import BottomNav from './BottomNav';
-
-// NEXTAUTH IMPORTS (Replacing Clerk)
 import { useSession, signIn, signOut } from 'next-auth/react';
 
 // ==========================================
@@ -37,7 +35,7 @@ const AnimatedParagraph = ({ text, className = "" }: { text: string, className?:
 // ==========================================
 // AESTHETIC HOME FEED COMPONENT 
 // ==========================================
-const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any) => void }) => {
+const HomeFeed = ({ articles, onRead, onSummarize }: { articles: any[], onRead: (article: any) => void, onSummarize: (article: any, e: React.MouseEvent) => void }) => {
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -78,7 +76,7 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
                     Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                   
-                  <button onClick={(e) => { e.stopPropagation(); alert("Jeevan AI Summary generation triggered!"); }} className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all">
+                  <button onClick={(e) => onSummarize(item, e)} className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all">
                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" />
                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
                     <div className="relative z-10 bg-[#0a0a0a] hover:bg-blue-900/40 p-2.5 rounded-[9px] transition-colors flex items-center justify-center">
@@ -103,7 +101,8 @@ export default function AppContainer() {
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null); 
   
-  // NEXTAUTH SESSION HOOKS
+  const [aiModal, setAiModal] = useState({ isOpen: false, isLoading: false, text: "", title: "" });
+  
   const { data: session, status } = useSession();
   const isLoaded = status !== "loading";
   const isSignedIn = !!session;
@@ -119,13 +118,44 @@ export default function AppContainer() {
     fetchData();
   }, []);
 
+  const handleGenerateSummary = async (article: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setAiModal({ isOpen: true, isLoading: true, text: "", title: article.title || "Article" });
+    
+    const rawTextBlocks = article.englishBody || article.body;
+    const fullText = rawTextBlocks?.map((block: any) => block.children?.[0]?.text).join(" ") || "";
+    
+    if (!fullText) {
+      setAiModal({ isOpen: true, isLoading: false, text: "No content available to summarize.", title: article.title });
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: fullText })
+      });
+      const data = await res.json();
+      
+      if (data.summary) {
+         setAiModal({ isOpen: true, isLoading: false, text: data.summary, title: article.title });
+      } else {
+         setAiModal({ isOpen: true, isLoading: false, text: "Failed to generate summary.", title: article.title });
+      }
+    } catch (error) {
+       setAiModal({ isOpen: true, isLoading: false, text: "Error communicating with Jeevan AI.", title: article.title });
+    }
+  };
+
   if (selectedArticle) {
     return (
       <div className="relative">
         <button onClick={() => setSelectedArticle(null)} className="fixed top-6 left-6 z-[110] bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-xl">
           <ArrowRight size={20} className="rotate-180" />
         </button>
-        <LiquidArticle article={selectedArticle} />
+        <LiquidArticle article={selectedArticle} onSummarize={handleGenerateSummary} />
+        <AiSummaryModal state={aiModal} setState={setAiModal} />
       </div>
     );
   }
@@ -133,29 +163,21 @@ export default function AppContainer() {
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
       <AnimatePresence mode="wait">
-        {activeTab === 'Home' && <HomeFeed key="home" articles={articles} onRead={setSelectedArticle} />}
+        {activeTab === 'Home' && <HomeFeed key="home" articles={articles} onRead={setSelectedArticle} onSummarize={handleGenerateSummary} />}
         {activeTab === 'For You' && <div key="foryou" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">For You Algorithm Booting...</h1></div>}
         {activeTab === 'Jeevan AI' && <div key="ai" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">Jeevan AI Initializing...</h1></div>}
         
-        {/* ========================================== */}
-        {/* NEXTAUTH PROFILE TAB */}
-        {/* ========================================== */}
         {activeTab === 'Profile' && (
           <div key="profile" className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
-            
             {!isLoaded ? (
-              // Loading State
               <h1 className="text-2xl text-gray-500 animate-pulse">Loading Profile...</h1>
             ) : !isSignedIn ? (
-              // Logged OUT State: Show our Aesthetic Login Button
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6 max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <UserIcon size={32} className="text-blue-400" />
                 </div>
                 <h2 className="text-3xl font-black text-white">Join Jeevan</h2>
                 <p className="text-gray-400 text-sm leading-relaxed">Sign in to sync your aesthetic feed, save your favorite articles, and chat with Jeevan AI.</p>
-                
-                {/* Replaced Clerk component with direct NextAuth sign in */}
                 <button onClick={() => signIn()} className="relative overflow-hidden p-[2px] rounded-xl group w-full mt-4 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all">
                   <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
                   <div className="relative z-10 bg-[#0a0a0a] group-hover:bg-blue-900/40 px-6 py-4 rounded-[10px] transition-colors flex items-center justify-center">
@@ -164,10 +186,8 @@ export default function AppContainer() {
                 </button>
               </motion.div>
             ) : (
-              // Logged IN State: Custom Aesthetic Profile UI
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md mx-auto flex flex-col items-center bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 z-0" />
-                
                 <div className="relative z-10 flex flex-col items-center">
                   {session.user?.image ? (
                     <img src={session.user.image} alt="Profile" className="w-24 h-24 rounded-full mb-6 border-4 border-[#0a0a0a] shadow-xl" />
@@ -176,30 +196,66 @@ export default function AppContainer() {
                       <UserIcon size={40} className="text-blue-400" />
                     </div>
                   )}
-                  
                   <h2 className="text-3xl font-black text-white mb-2 tracking-tight">{session.user?.name || "Jeevan User"}</h2>
                   <p className="text-blue-400 text-sm font-medium mb-8 px-4 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">{session.user?.email}</p>
-                  
                   <button onClick={() => signOut()} className="w-full py-3 px-8 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all font-bold tracking-wide">
                     Sign Out
                   </button>
                 </div>
               </motion.div>
             )}
-
           </div>
         )}
       </AnimatePresence>
 
+      <AiSummaryModal state={aiModal} setState={setAiModal} />
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 }
 
 // ==========================================
-// YOUR ORIGINAL LIQUID ARTICLE (Unchanged)
+// AI SUMMARY MODAL COMPONENT
 // ==========================================
-function LiquidArticle({ article }: { article: any }) {
+const AiSummaryModal = ({ state, setState }: { state: any, setState: any }) => {
+  if (!state.isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setState({ ...state, isOpen: false })} />
+      <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-full max-w-lg bg-[#0a0a0a] border border-blue-500/20 rounded-3xl p-6 md:p-8 shadow-[0_0_50px_rgba(59,130,246,0.15)] overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500" />
+        <button onClick={() => setState({ ...state, isOpen: false })} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 rounded-full"><X size={20}/></button>
+        
+        <div className="flex items-center gap-3 mb-6 pr-8">
+          <div className="p-2.5 bg-blue-500/20 rounded-xl shrink-0"><Bot size={24} className="text-blue-400" /></div>
+          <div>
+            <h3 className="font-bold text-white text-lg flex items-center gap-2">Jeevan AI Summary <Sparkles size={14} className="text-emerald-400" /></h3>
+            <p className="text-xs text-gray-400 line-clamp-1">{state.title}</p>
+          </div>
+        </div>
+        
+        <div className="bg-blue-900/10 rounded-2xl p-6 min-h-[150px] border border-white/5 flex items-center justify-center">
+          {state.isLoading ? (
+             <div className="flex flex-col items-center justify-center space-y-4 py-4">
+               <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full" />
+               <p className="text-sm text-blue-400 animate-pulse font-medium">Jeevan AI is reading the article...</p>
+             </div>
+          ) : (
+             <div className="text-gray-200 text-sm md:text-base leading-relaxed w-full">
+               <AnimatedParagraph text={state.text} />
+             </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// ==========================================
+// LIQUID ARTICLE
+// ==========================================
+function LiquidArticle({ article, onSummarize }: { article: any, onSummarize: (article: any) => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [language, setLanguage] = useState<'AS' | 'EN'>('AS');
 
@@ -295,7 +351,7 @@ function LiquidArticle({ article }: { article: any }) {
                 {language === 'AS' ? <p>এই প্ৰবন্ধটো পঢ়াৰ আগতে, জীৱন AI-ৰ জৰিয়তে ইয়াৰ মূল সাৰাংশ আৰু গুৰুত্বপূৰ্ণ দিশসমূহ জানিবলৈ তলৰ বুটামটো টিপক।</p> : <p>Before diving into the article, get a quick intelligent summary and key takeaways generated by Jeevan AI.</p>}
               </motion.div>
             </AnimatePresence>
-            <motion.button whileHover={{ scale: 1.02, boxShadow: "0px 0px 15px rgba(59,130,246,0.5)" }} whileTap={{ scale: 0.96 }} className="relative overflow-hidden w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] group">
+            <motion.button onClick={() => onSummarize(article)} whileHover={{ scale: 1.02, boxShadow: "0px 0px 15px rgba(59,130,246,0.5)" }} whileTap={{ scale: 0.96 }} className="relative overflow-hidden w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] group">
               <span className="relative z-10 flex items-center gap-2">{ui.aiButton} <ArrowRight size={18} /></span>
             </motion.button>
           </div>
