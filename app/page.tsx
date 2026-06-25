@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionTemplate } from 'framer-motion';
 import gsap from 'gsap';
-import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User } from 'lucide-react';
+import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User as UserIcon } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import BottomNav from './BottomNav';
 
-// CLERK IMPORTS
-import { SignedIn, SignedOut, SignInButton, UserProfile } from '@clerk/nextjs';
+// CLERK IMPORTS (Changed to useUser hook for Client Component safety)
+import { SignInButton, UserProfile, useUser } from '@clerk/nextjs';
 
 // ==========================================
 // Word-by-Word Living Text Component
@@ -61,6 +61,7 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
           >
             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-50 blur-xl group-hover:opacity-100 transition-opacity duration-500" />
             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+            
             <div className="relative z-10 bg-[#0a0a0a] rounded-[21px] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)]">
               <div className="relative h-56 w-full overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent z-10" />
@@ -69,12 +70,14 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
                   <span className="text-[10px] font-bold text-gray-200 uppercase tracking-wider">{item.category || "Article"}</span>
                 </div>
               </div>
+              
               <div className="p-6 relative z-20 flex-1 flex flex-col justify-between -mt-8">
                 <div><AnimatedParagraph text={item.title} className="text-xl font-bold text-white leading-tight mb-6" /></div>
                 <div className="flex items-center justify-between mt-auto">
                   <span className="text-sm font-bold text-gray-400 flex items-center gap-2 group-hover:text-white transition-colors">
                     Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </span>
+                  
                   <button onClick={(e) => { e.stopPropagation(); alert("Jeevan AI Summary generation triggered!"); }} className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all">
                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" />
                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
@@ -99,6 +102,9 @@ export default function AppContainer() {
   const [activeTab, setActiveTab] = useState('Home');
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null); 
+  
+  // THE FIX: We use the hook here instead of the wrapper components!
+  const { isLoaded, isSignedIn } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,16 +136,19 @@ export default function AppContainer() {
         {activeTab === 'Jeevan AI' && <div key="ai" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">Jeevan AI Initializing...</h1></div>}
         
         {/* ========================================== */}
-        {/* NEW CLERK PROFILE TAB */}
+        {/* NEW CLERK PROFILE TAB (Using hooks) */}
         {/* ========================================== */}
         {activeTab === 'Profile' && (
           <div key="profile" className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
             
-            {/* If the user is logged out, show the custom login prompt */}
-            <SignedOut>
+            {!isLoaded ? (
+              // Loading State
+              <h1 className="text-2xl text-gray-500 animate-pulse">Clerk Profile Loading...</h1>
+            ) : !isSignedIn ? (
+              // Logged OUT State: Show our Aesthetic Login Button
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6 max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <User size={32} className="text-blue-400" />
+                  <UserIcon size={32} className="text-blue-400" />
                 </div>
                 <h2 className="text-3xl font-black text-white">Join Jeevan</h2>
                 <p className="text-gray-400 text-sm leading-relaxed">Sign in to sync your aesthetic feed, save your favorite articles, and chat with Jeevan AI.</p>
@@ -153,14 +162,12 @@ export default function AppContainer() {
                   </button>
                 </SignInButton>
               </motion.div>
-            </SignedOut>
-
-            {/* If the user is logged in, show their full Clerk Profile manager */}
-            <SignedIn>
+            ) : (
+              // Logged IN State: Show their full Clerk Profile
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-4xl mx-auto flex justify-center">
                 <UserProfile />
               </motion.div>
-            </SignedIn>
+            )}
 
           </div>
         )}
