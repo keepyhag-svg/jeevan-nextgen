@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionTemplate } from 'framer-motion';
 import gsap from 'gsap';
-import { Sparkles, ArrowRight, Globe, Bot, Home, User, Zap } from 'lucide-react';
+import { Sparkles, ArrowRight, Globe, Bot, Zap } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import BottomNav from './BottomNav';
 
@@ -32,10 +32,10 @@ const AnimatedParagraph = ({ text, className = "" }: { text: string, className?:
 };
 
 // ==========================================
-// NEW: AESTHETIC HOME FEED COMPONENT
+// AESTHETIC HOME FEED COMPONENT
 // ==========================================
 const HomeFeed = ({ setReadingArticle }: { setReadingArticle: (val: boolean) => void }) => {
-  // Mock data - eventually we fetch this array from Sanity CMS
+  // Mock data - Next step is swapping this for your Sanity CMS data!
   const articles = [
     {
       id: 1,
@@ -50,79 +50,94 @@ const HomeFeed = ({ setReadingArticle }: { setReadingArticle: (val: boolean) => 
       category: "Mindfulness",
       readTime: "6 Min Read",
       image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=1000&auto=format&fit=crop",
+    },
+    {
+      id: 3,
+      title: "Assam's Next-Gen Tech Revolution",
+      category: "Local",
+      readTime: "5 Min Read",
+      image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop",
     }
   ];
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="max-w-md mx-auto px-6 pt-24 pb-32 space-y-12"
+      // MATCHED WIDTH: Now using max-w-3xl to match the article page
+      className="max-w-3xl mx-auto px-6 pt-24 pb-32 space-y-8"
     >
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-black text-white tracking-tight">Discover</h1>
         <Sparkles className="text-blue-500 animate-pulse" />
       </div>
 
-      {articles.map((item, index) => (
-        <motion.div 
-          key={item.id}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 0.7, delay: index * 0.1 }}
-          className="relative group cursor-pointer"
-          onClick={() => setReadingArticle(true)} // Clicking opens the article
-        >
-          {/* THE GLOWING RUNNING BORDER */}
-          <div className="absolute -inset-[2px] bg-gradient-to-r from-blue-600 via-emerald-500 to-blue-600 rounded-3xl opacity-0 group-hover:opacity-100 blur-md transition-all duration-500 group-hover:animate-pulse" />
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-blue-500 via-teal-400 to-emerald-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-500 z-0" />
-          
-          {/* CARD CONTENT */}
-          <div className="relative z-10 bg-[#0a0a0a] rounded-3xl overflow-hidden shadow-2xl border border-white/5 group-hover:border-transparent transition-colors duration-500">
-            
-            {/* Image Container */}
-            <div className="relative h-64 w-full overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent z-10" />
-              <motion.img 
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-                src={item.image} 
-                alt={item.title}
-                className="w-full h-full object-cover"
-              />
+      {/* Grid Layout: 1 column on phones, 2 columns on tablets/desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {articles.map((item, index) => (
+          <motion.div 
+            key={item.id}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-10%" }}
+            transition={{ duration: 0.7, delay: index * 0.1 }}
+            // THE OUTER CONTAINER FOR THE SNAKE BORDER (p-[2px] is the border thickness)
+            className="relative group cursor-pointer rounded-3xl overflow-hidden p-[2px] h-full flex flex-col"
+            onClick={() => setReadingArticle(true)}
+          >
+            {/* 1. THE MOVING SNAKE BORDER (Spinning Conic Gradient) */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_70%,rgba(59,130,246,1)_100%)] opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+            />
+
+            {/* 2. INNER CARD BACKGROUND (Covers the center, leaves the glowing edge) */}
+            <div className="relative z-10 bg-[#0a0a0a] rounded-[calc(1.5rem-2px)] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)]">
               
-              {/* Category Pill */}
-              <div className="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                <span className="text-xs font-bold text-white uppercase tracking-wider">{item.category}</span>
+              {/* Image Container */}
+              <div className="relative h-56 w-full overflow-hidden shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent z-10" />
+                <motion.img 
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                  src={item.image} 
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Category Pill */}
+                <div className="absolute top-4 left-4 z-20 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                  <span className="text-[10px] font-bold text-gray-200 uppercase tracking-wider">{item.category}</span>
+                </div>
+              </div>
+
+              {/* Text & Actions */}
+              <div className="p-6 relative z-20 flex-1 flex flex-col justify-between -mt-8">
+                <div>
+                  <span className="text-blue-400 text-xs font-bold mb-2 block">{item.readTime}</span>
+                  <AnimatedParagraph text={item.title} className="text-xl font-bold text-white leading-tight mb-6" />
+                </div>
+                
+                <div className="flex items-center justify-between mt-auto">
+                  <span className="text-sm font-bold text-gray-400 flex items-center gap-2 group-hover:text-white transition-colors">
+                    Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  </span>
+
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); 
+                      alert("Jeevan AI Summary generation triggered!"); 
+                    }}
+                    className="bg-blue-900/30 hover:bg-blue-600/50 p-2.5 rounded-xl border border-blue-500/30 transition-all text-blue-400 hover:text-white group-hover:border-blue-400/50 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  >
+                    <Zap size={18} />
+                  </button>
+                </div>
               </div>
             </div>
-
-            {/* Text & Actions */}
-            <div className="p-6 relative z-20 -mt-12">
-              <span className="text-gray-400 text-xs font-medium mb-2 block">{item.readTime}</span>
-              <AnimatedParagraph text={item.title} className="text-2xl font-bold text-white leading-tight mb-6" />
-              
-              <div className="flex items-center justify-between">
-                {/* Read Article Button */}
-                <span className="text-sm font-bold text-blue-400 flex items-center gap-2 group-hover:text-blue-300 transition-colors">
-                  Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-
-                {/* AI Summary Quick Action */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevents opening the article
-                    alert("AI Summary generation triggered!"); // We will build this next
-                  }}
-                  className="bg-blue-500/20 hover:bg-blue-500/40 p-2.5 rounded-xl border border-blue-500/30 transition-all text-blue-400 hover:text-white"
-                >
-                  <Zap size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      ))}
+          </motion.div>
+        ))}
+      </div>
     </motion.div>
   );
 };
@@ -131,19 +146,15 @@ const HomeFeed = ({ setReadingArticle }: { setReadingArticle: (val: boolean) => 
 // MAIN APP CONTAINER
 // ==========================================
 export default function AppContainer() {
-  // This state controls which tab we are on from the BottomNav
   const [activeTab, setActiveTab] = useState('Home');
-  // This state controls if we are reading a specific article
   const [readingArticle, setReadingArticle] = useState(false);
 
-  // If reading an article, render the LiquidArticle component
   if (readingArticle) {
     return (
       <div className="relative">
-        {/* Back Button */}
         <button 
           onClick={() => setReadingArticle(false)}
-          className="fixed top-6 left-6 z-[110] bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-full text-white hover:bg-white/20 transition-all"
+          className="fixed top-6 left-6 z-[110] bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-xl"
         >
           <ArrowRight size={20} className="rotate-180" />
         </button>
@@ -152,7 +163,6 @@ export default function AppContainer() {
     );
   }
 
-  // Otherwise, render the main App shell based on active nav tab
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
       <AnimatePresence mode="wait">
@@ -168,7 +178,7 @@ export default function AppContainer() {
 }
 
 // ==========================================
-// YOUR ORIGINAL LIQUID ARTICLE (Unchanged inside)
+// YOUR ORIGINAL LIQUID ARTICLE 
 // ==========================================
 function LiquidArticle() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -192,6 +202,7 @@ function LiquidArticle() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // NOTE: This currently just fetches ONE post. 
       const query = `*[_type == "post"][0]{
         title, englishTitle, "authorName": author->name, publishedAt, body, englishBody
       }`;
@@ -228,6 +239,7 @@ function LiquidArticle() {
   };
 
   return (
+    // MATCHED WIDTH: Uses max-w-3xl inside the main tag below
     <div className="min-h-screen bg-[#030303] text-white font-sans overflow-hidden selection:bg-blue-500/30 relative pb-32">
       <motion.div style={{ scaleX }} className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-teal-400 to-emerald-500 origin-left z-[100]" />
       <motion.div style={{ y: glowY }} className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
