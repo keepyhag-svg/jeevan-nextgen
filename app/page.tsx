@@ -32,7 +32,7 @@ const AnimatedParagraph = ({ text, className = "" }: { text: string, className?:
 };
 
 // ==========================================
-// AESTHETIC HOME FEED COMPONENT (Now uses REAL Sanity Data)
+// AESTHETIC HOME FEED COMPONENT 
 // ==========================================
 const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any) => void }) => {
   return (
@@ -53,26 +53,32 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.7, delay: index * 0.1 }}
-            // THINNER BORDER: p-[1px] makes it sleek and sharp
-            className="relative group cursor-pointer rounded-3xl overflow-hidden p-[1px] h-full flex flex-col"
+            // THICKER BORDER: p-[3px] makes the snake wide and juicy
+            className="relative group cursor-pointer rounded-3xl overflow-hidden p-[3px] h-full flex flex-col"
             onClick={() => onRead(item)}
           >
-            {/* 1. THE INSTAGRAM-VIBE SNAKE BORDER (Emerald -> Blue -> Purple) */}
+            {/* 1. NEON BLUR EFFECT (Makes it glow outward) */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-50 blur-xl group-hover:opacity-100 transition-opacity duration-500"
             />
 
-            {/* 2. INNER CARD BACKGROUND */}
-            <div className="relative z-10 bg-[#0a0a0a] rounded-[calc(1.5rem-1px)] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+            {/* 2. THE MAIN SHARP SNAKE */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] bg-[conic-gradient(from_0deg,transparent_40%,#10b981_60%,#3b82f6_80%,#8b5cf6_100%)] opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+            />
+
+            {/* 3. INNER CARD BACKGROUND (Adjusted radius to fit the 3px border exactly) */}
+            <div className="relative z-10 bg-[#0a0a0a] rounded-[21px] h-full overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.8)]">
               
               <div className="relative h-56 w-full overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent z-10" />
                 <motion.img 
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.7, ease: "easeOut" }}
-                  // Uses Sanity Image if it exists, otherwise uses a cool fallback
                   src={item.imageUrl || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000&auto=format&fit=crop"} 
                   alt={item.title}
                   className="w-full h-full object-cover"
@@ -95,23 +101,30 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
                     Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </span>
 
-                  {/* GLOWING AI BUTTON: Mini Snake & Drop Shadow added */}
+                  {/* THICK GLOWING AI BUTTON */}
                   <button 
                     onClick={(e) => {
                       e.stopPropagation(); 
                       alert("Jeevan AI Summary generation triggered!"); 
                     }}
-                    className="relative overflow-hidden p-[1px] rounded-xl group/btn shrink-0"
+                    // Added intense outer shadow and thick 3px padding
+                    className="relative overflow-hidden p-[3px] rounded-xl group/btn shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-all"
                   >
-                    {/* The Mini Button Snake */}
+                    {/* Blurred inner snake for glow */}
                     <motion.div 
                       animate={{ rotate: 360 }} 
                       transition={{ repeat: Infinity, duration: 2, ease: "linear" }} 
-                      className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-80" 
+                      className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100 blur-md" 
                     />
-                    {/* Button Inside */}
-                    <div className="relative z-10 bg-[#0a0a0a] hover:bg-blue-900/40 p-2.5 rounded-[11px] transition-colors flex items-center justify-center">
-                      <Zap size={18} className="text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.9)] group-hover/btn:animate-pulse" />
+                    {/* Sharp inner snake */}
+                    <motion.div 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }} 
+                      className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" 
+                    />
+                    {/* Button Inside (Dark to contrast the bright glow) */}
+                    <div className="relative z-10 bg-[#0a0a0a] hover:bg-blue-900/40 p-2.5 rounded-[9px] transition-colors flex items-center justify-center">
+                      <Zap size={20} className="text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,1)] group-hover/btn:animate-pulse group-hover/btn:text-white transition-colors" />
                     </div>
                   </button>
 
@@ -126,14 +139,13 @@ const HomeFeed = ({ articles, onRead }: { articles: any[], onRead: (article: any
 };
 
 // ==========================================
-// MAIN APP CONTAINER (The Brains of the App)
+// MAIN APP CONTAINER
 // ==========================================
 export default function AppContainer() {
   const [activeTab, setActiveTab] = useState('Home');
   const [articles, setArticles] = useState<any[]>([]);
-  const [selectedArticle, setSelectedArticle] = useState<any>(null); // Holds the actual article clicked
+  const [selectedArticle, setSelectedArticle] = useState<any>(null); 
 
-  // 1. We fetch ALL articles from Sanity immediately when the app loads
   useEffect(() => {
     const fetchData = async () => {
       const query = `*[_type == "post"] | order(publishedAt desc) {
@@ -152,7 +164,6 @@ export default function AppContainer() {
     fetchData();
   }, []);
 
-  // 2. If a user clicks an article, we render the LiquidArticle and pass it the data directly
   if (selectedArticle) {
     return (
       <div className="relative">
@@ -162,13 +173,11 @@ export default function AppContainer() {
         >
           <ArrowRight size={20} className="rotate-180" />
         </button>
-        {/* Pass the real Sanity article down */}
         <LiquidArticle article={selectedArticle} />
       </div>
     );
   }
 
-  // 3. Otherwise, show the Home Feed with the Sanity data
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
       <AnimatePresence mode="wait">
@@ -184,7 +193,7 @@ export default function AppContainer() {
 }
 
 // ==========================================
-// YOUR ORIGINAL LIQUID ARTICLE (Now uses passed data!)
+// YOUR ORIGINAL LIQUID ARTICLE
 // ==========================================
 function LiquidArticle({ article }: { article: any }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
