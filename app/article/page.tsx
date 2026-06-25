@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
 import gsap from 'gsap';
-import { Sparkles, ArrowRight, Globe, Bot, Loader2, AlertCircle } from 'lucide-react'; // Added Loader2 & AlertCircle
+import { Sparkles, ArrowRight, Globe, Bot, Loader2, AlertCircle } from 'lucide-react';
 import { client } from '../../sanity/lib/client'; 
 
 export default function LiquidArticle() {
@@ -11,10 +11,13 @@ export default function LiquidArticle() {
   const [article, setArticle] = useState<any>(null);
   const [language, setLanguage] = useState<'AS' | 'EN'>('AS');
 
-  // --- NEW STATE FOR AI SUMMARY ---
+  // --- AI STATE ---
   const [isGenerating, setIsGenerating] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // --- THE FIX: ABORT CONTROLLER TO PREVENT RACE CONDITIONS ---
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
@@ -41,47 +44,67 @@ export default function LiquidArticle() {
     }
   }, [article]);
 
-  // --- NEW FUNCTION TO CALL YOUR API ---
+  const isEnglishAvailable = !!article?.englishBody;
+  const showEnglish = language === 'EN' && isEnglishAvailable;
+  const currentTitle = showEnglish ? article?.englishTitle : article?.title;
+  const currentBody = showEnglish ? article?.englishBody : article?.body;
+
+  // --- BULLETPROOF AI GENERATION FUNCTION ---
   const handleGenerateSummary = async () => {
     if (!currentBody) return;
     
+    // Kill any stuck/ongoing requests if the button is clicked again
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setIsGenerating(true);
     setAiError(null);
     setSummary(null);
 
-    // 1. Extract plain text from Sanity block content
     const textToSummarize = currentBody
       .map((block: any) => block.children?.[0]?.text || '')
       .join('\n');
 
     try {
-      // 2. Call your route.ts backend
       const res = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: textToSummarize })
+        body: JSON.stringify({ text: textToSummarize }),
+        signal: abortControllerRef.current.signal // Link to the kill switch
       });
 
       const data = await res.json();
 
-      // 3. Handle errors from the backend
       if (!res.ok) {
         throw new Error(data.error || 'Failed to generate summary.');
       }
 
-      // 4. Save the success state
       setSummary(data.summary);
     } catch (error: any) {
-      setAiError(error.message);
+      // If WE killed the request by switching tabs, ignore the error silently
+      if (error.name === 'AbortError') {
+        console.log("Fetch aborted because language was switched.");
+      } else {
+        setAiError(error.message);
+      }
     } finally {
-      setIsGenerating(false);
+      // Only stop the loading spinner if we didn't manually abort the request
+      if (!abortControllerRef.current?.signal.aborted) {
+        setIsGenerating(false);
+      }
     }
   };
 
-  // Reset summary if the user switches languages
+  // Reset summary and KILL the fetch if the user switches languages mid-generation
   useEffect(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     setSummary(null);
     setAiError(null);
+    setIsGenerating(false);
   }, [language]);
 
 
@@ -94,11 +117,6 @@ export default function LiquidArticle() {
       </div>
     );
   }
-
-  const isEnglishAvailable = !!article.englishBody;
-  const showEnglish = language === 'EN' && isEnglishAvailable;
-  const currentTitle = showEnglish ? article.englishTitle : article.title;
-  const currentBody = showEnglish ? article.englishBody : article.body;
   
   const ui = {
     tag: language === 'AS' ? 'দৃষ্টিকোণ • ৫ মিনিটৰ পঠন' : 'Perspective • 5 Min Read',
@@ -164,7 +182,7 @@ export default function LiquidArticle() {
           </div>
         </motion.div>
 
-        {/* --- UPDATED AI WIDGET --- */}
+        {/* --- AI WIDGET --- */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.6 }} 
           className="w-full bg-blue-900/10 border border-blue-500/20 backdrop-blur-md rounded-2xl p-6 md:p-8 mb-12 relative overflow-hidden group"

@@ -21,9 +21,9 @@ export async function POST(req: Request) {
 
     const prompt = `You are an intelligent AI assistant for a modern Assamese magazine called Jeevan. Provide a highly engaging, concise 3-4 sentence summary of the following article text. Please write the summary in the same language as the article text provided (Assamese or English). Do not use any introductory phrases, just jump straight into the summary:\n\n${text}`;
 
-    // FIXED: Call Cohere's active multilingual model using the exact version-stamped ID
+    // Safest active model identifier for Multilingual generation
     const response = await cohere.chat({
-      model: "command-a-03-2025",
+      model: "command-r-plus-08-2024",
       message: prompt,
     });
 
@@ -33,7 +33,6 @@ export async function POST(req: Request) {
          return NextResponse.json({ error: "AI returned a response, but the text was empty." }, { status: 500 });
     }
 
-    // Send the summary back to your page.tsx UI
     return NextResponse.json({ summary });
     
   } catch (error: any) {
