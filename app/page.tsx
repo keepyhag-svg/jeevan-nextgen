@@ -52,7 +52,7 @@ const AnimatedParagraph = ({ text, className = "" }: { text: string, className?:
 };
 
 // ==========================================
-// 2. HERO SECTION & INFINITE TICKER
+// 2. HERO SECTION & INFINITE TICKER (UPDATED AESTHETICS)
 // ==========================================
 const HeroSection = () => {
   return (
@@ -64,7 +64,7 @@ const HeroSection = () => {
         className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-[0_0_30px_rgba(59,130,246,0.2)]"
       >
         <Sparkles size={16} className="text-blue-400 animate-pulse" />
-        <span className="text-xs font-bold text-gray-300 tracking-widest uppercase">Welcome to the Next Generation</span>
+        <span className="text-xs font-bold text-gray-300 tracking-widest uppercase">A Jeevan Initiative</span>
       </motion.div>
       
       <motion.h1 
@@ -73,12 +73,12 @@ const HeroSection = () => {
       >
         Experience <br/> 
         <motion.span animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400 bg-[length:200%_auto]">
-          Jeevan Magazine
+          জীৱন অসমীয়া আলোচনী
         </motion.span>
       </motion.h1>
       
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.4 }} className="max-w-xl text-gray-400 text-lg md:text-xl leading-relaxed">
-        Read, discover, and interact with Assamese culture like never before, powered by cutting-edge AI.
+        Read, discover, and immerse yourself in the rich tapestry of Assamese literature, culture, and unique perspectives.
       </motion.p>
     </div>
   );
@@ -89,9 +89,9 @@ const InfiniteTicker = () => (
     <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="flex whitespace-nowrap gap-12 text-sm font-bold tracking-widest uppercase text-gray-500 pr-12">
       {[...Array(8)].map((_, i) => (
         <span key={i} className="flex items-center gap-6">
-          JEEVAN NEXTGEN <Sparkles size={14} className="text-blue-500 animate-pulse"/> 
-          AI SUMMARIES <Zap size={14} className="text-emerald-500 animate-pulse"/> 
-          AESTHETIC UI <Flame size={14} className="text-orange-500 animate-pulse"/>
+          JEEVAN DIGITAL MAGAZINE <Sparkles size={14} className="text-blue-500 animate-pulse"/> 
+          অসমীয়া সাহিত্য <Compass size={14} className="text-emerald-500 animate-pulse"/> 
+          CULTURE & PERSPECTIVE <Flame size={14} className="text-orange-500 animate-pulse"/>
         </span>
       ))}
     </motion.div>
@@ -208,7 +208,6 @@ export default function AppContainer() {
       
       const data = await res.json();
       
-      // THIS IS THE FIX: We now strictly catch the error Google sends back
       if (res.ok && data.summary) {
          setAiModal({ isOpen: true, isLoading: false, text: data.summary, title: article.title });
       } else {
