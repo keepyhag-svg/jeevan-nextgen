@@ -7,8 +7,8 @@ import { Sparkles, ArrowRight, Globe, Bot, Zap, Home, User as UserIcon } from 'l
 import { client } from '../sanity/lib/client'; 
 import BottomNav from './BottomNav';
 
-// CLERK IMPORTS (Changed to useUser hook for Client Component safety)
-import { SignInButton, UserProfile, useUser } from '@clerk/nextjs';
+// NEXTAUTH IMPORTS (Replacing Clerk)
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 // ==========================================
 // Word-by-Word Living Text Component
@@ -103,8 +103,10 @@ export default function AppContainer() {
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null); 
   
-  // THE FIX: We use the hook here instead of the wrapper components!
-  const { isLoaded, isSignedIn } = useUser();
+  // NEXTAUTH SESSION HOOKS
+  const { data: session, status } = useSession();
+  const isLoaded = status !== "loading";
+  const isSignedIn = !!session;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,14 +138,14 @@ export default function AppContainer() {
         {activeTab === 'Jeevan AI' && <div key="ai" className="flex items-center justify-center min-h-screen"><h1 className="text-2xl text-gray-500 animate-pulse">Jeevan AI Initializing...</h1></div>}
         
         {/* ========================================== */}
-        {/* NEW CLERK PROFILE TAB (Using hooks) */}
+        {/* NEXTAUTH PROFILE TAB */}
         {/* ========================================== */}
         {activeTab === 'Profile' && (
           <div key="profile" className="flex flex-col items-center justify-center min-h-screen pb-32 px-6">
             
             {!isLoaded ? (
               // Loading State
-              <h1 className="text-2xl text-gray-500 animate-pulse">Clerk Profile Loading...</h1>
+              <h1 className="text-2xl text-gray-500 animate-pulse">Loading Profile...</h1>
             ) : !isSignedIn ? (
               // Logged OUT State: Show our Aesthetic Login Button
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6 max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
@@ -153,19 +155,35 @@ export default function AppContainer() {
                 <h2 className="text-3xl font-black text-white">Join Jeevan</h2>
                 <p className="text-gray-400 text-sm leading-relaxed">Sign in to sync your aesthetic feed, save your favorite articles, and chat with Jeevan AI.</p>
                 
-                <SignInButton mode="modal">
-                  <button className="relative overflow-hidden p-[2px] rounded-xl group w-full mt-4 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all">
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
-                    <div className="relative z-10 bg-[#0a0a0a] group-hover:bg-blue-900/40 px-6 py-4 rounded-[10px] transition-colors flex items-center justify-center">
-                      <span className="font-bold text-white tracking-wide">Sign In / Sign Up</span>
-                    </div>
-                  </button>
-                </SignInButton>
+                {/* Replaced Clerk component with direct NextAuth sign in */}
+                <button onClick={() => signIn()} className="relative overflow-hidden p-[2px] rounded-xl group w-full mt-4 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all">
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_50%,#3b82f6_100%)] opacity-100" />
+                  <div className="relative z-10 bg-[#0a0a0a] group-hover:bg-blue-900/40 px-6 py-4 rounded-[10px] transition-colors flex items-center justify-center">
+                    <span className="font-bold text-white tracking-wide">Sign In / Sign Up</span>
+                  </div>
+                </button>
               </motion.div>
             ) : (
-              // Logged IN State: Show their full Clerk Profile
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-4xl mx-auto flex justify-center">
-                <UserProfile />
+              // Logged IN State: Custom Aesthetic Profile UI
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md mx-auto flex flex-col items-center bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 z-0" />
+                
+                <div className="relative z-10 flex flex-col items-center">
+                  {session.user?.image ? (
+                    <img src={session.user.image} alt="Profile" className="w-24 h-24 rounded-full mb-6 border-4 border-[#0a0a0a] shadow-xl" />
+                  ) : (
+                    <div className="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border-4 border-[#0a0a0a] shadow-xl">
+                      <UserIcon size={40} className="text-blue-400" />
+                    </div>
+                  )}
+                  
+                  <h2 className="text-3xl font-black text-white mb-2 tracking-tight">{session.user?.name || "Jeevan User"}</h2>
+                  <p className="text-blue-400 text-sm font-medium mb-8 px-4 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">{session.user?.email}</p>
+                  
+                  <button onClick={() => signOut()} className="w-full py-3 px-8 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all font-bold tracking-wide">
+                    Sign Out
+                  </button>
+                </div>
               </motion.div>
             )}
 
