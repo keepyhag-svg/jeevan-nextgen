@@ -1,10 +1,38 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionTemplate } from 'framer-motion';
 import gsap from 'gsap';
 import { Sparkles, ArrowRight, Globe, Bot } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
+
+// ==========================================
+// NEW COMPONENT: Word-by-Word Living Text
+// ==========================================
+const AnimatedParagraph = ({ text }: { text: string }) => {
+  if (!text) return null;
+  const words = text.split(" ");
+  
+  return (
+    <p className="flex flex-wrap gap-[0.3em] mb-6">
+      {words.map((word, index) => (
+        <motion.span
+          key={index}
+          initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ 
+            duration: 0.5, 
+            delay: index * 0.015, // Fast, smooth stagger for each word
+            ease: [0.22, 1, 0.36, 1] 
+          }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </p>
+  );
+};
 
 export default function LiquidArticle() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -15,6 +43,21 @@ export default function LiquidArticle() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
   const glowY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+
+  // ==========================================
+  // NEW HOOKS: Pointer Tracking for AI Box
+  // ==========================================
+  const mouseX = useSpring(0, { stiffness: 500, damping: 50 });
+  const mouseY = useSpring(0, { stiffness: 500, damping: 50 });
+
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  }
+
+  // Creates the dynamic gradient string based on mouse position
+  const spotlightBackground = useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, rgba(59, 130, 246, 0.15), transparent 80%)`;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,7 +133,6 @@ export default function LiquidArticle() {
         </div>
       </div>
 
-      {/* CHANGED: max-w-3xl for a premium, focused reading experience */}
       <main className="max-w-3xl mx-auto px-6 py-28 md:py-32 relative z-10">
         
         <AnimatePresence>
@@ -129,17 +171,25 @@ export default function LiquidArticle() {
         </motion.div>
 
         {/* ======================================================== */}
-        {/* INLINE JEEVAN AI BOX (Ready for future Gemini Integration) */}
+        {/* INTERACTIVE JEEVAN AI BOX */}
         {/* ======================================================== */}
         <motion.div 
+          onPointerMove={handlePointerMove}
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.8, duration: 0.6 }} 
           className="w-full bg-blue-900/10 border border-blue-500/20 backdrop-blur-md rounded-2xl p-6 md:p-8 mb-12 relative overflow-hidden group"
         >
-          {/* Subtle animated background gradient */}
+          {/* Default static background */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-emerald-500/5 opacity-50" />
           
+          {/* Dynamic Spotlight that follows the mouse/touch */}
+          <motion.div
+            className="absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            style={{ background: spotlightBackground }}
+          />
+          
+          {/* Content must have relative z-10 to stay above the glow */}
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-blue-500/20 p-2 rounded-xl">
@@ -160,33 +210,28 @@ export default function LiquidArticle() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Future Trigger for Gemini API */}
+            {/* Interactive Button */}
             <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+              whileHover={{ scale: 1.02, boxShadow: "0px 0px 15px rgba(59,130,246,0.5)" }}
+              whileTap={{ scale: 0.96 }}
+              className="relative overflow-hidden w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] group"
             >
-              {ui.aiButton} <ArrowRight size={18} />
+              <span className="relative z-10 flex items-center gap-2">
+                {ui.aiButton} <ArrowRight size={18} />
+              </span>
             </motion.button>
           </div>
         </motion.div>
         {/* ======================================================== */}
 
-        {/* Article Body Content */}
+        {/* Article Body Content with Living Text Component */}
         <div className="space-y-8 text-gray-300 text-lg md:text-xl leading-relaxed font-medium">
           <AnimatePresence mode="wait">
             <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
-              {currentBody?.map((block: any, index: number) => (
-                <motion.p 
-                  key={index}
-                  initial={{ opacity: 0, y: 40, filter: 'blur(5px)' }}
-                  whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                >
-                  {block.children?.[0]?.text}
-                </motion.p>
-              ))}
+              {currentBody?.map((block: any, index: number) => {
+                const text = block.children?.[0]?.text;
+                return <AnimatedParagraph key={index} text={text} />;
+              })}
             </motion.div>
           </AnimatePresence>
         </div>
