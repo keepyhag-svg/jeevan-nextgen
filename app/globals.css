@@ -1,22 +1,35 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Set Plus Jakarta Sans as the default body font */
   --font-sans: var(--font-jakarta), sans-serif;
-  
-  /* Hijack the 'font-serif' class to use our massive Syne font for headers */
   --font-serif: var(--font-syne), sans-serif;
 }
 
-/* Base resets to keep things clean */
+/* Luxury Monochromatic Foundation */
 body {
   margin: 0;
   padding: 0;
+  background-color: #ffffff;
+  color: #000000;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-smoothing: grayscale;
 }
 
-/* Hide scrollbar for smooth horizontal scrolling sections */
+/* Elegant, thin border utilities matching premium directories */
+.border-premium {
+  border: 1px solid #e5e7eb;
+}
+
+.border-dotted-b {
+  border-bottom: 1px dotted #cccccc;
+}
+
+/* Custom layout smooth-scroll preservation */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide raw system scrollbars for clean custom horizontal layouts */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
