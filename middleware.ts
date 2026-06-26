@@ -1,15 +1,13 @@
-import { auth } from "./auth"
+import { auth } from "./auth" // Assuming you are using NextAuth v5 based on your auth.ts file
 
 export default auth((req) => {
-  // We will add logic here later if you want to block people from certain pages.
-  // For now, this simply initializes your authentication session globally.
-})
+  // You can add custom auth logic here later if needed
+});
 
+// This config tells the middleware WHAT routes to protect.
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    // Ignore the homepage (/$), articles (/article/*), Sanity Studio (/studio/*), and Next.js internals
+    "/((?!^/$|^/article/.*|^/studio/.*|api|_next/static|_next/image|favicon.ico).*)",
   ],
-}
+};
