@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import gsap from 'gsap';
 import { 
   ArrowRight, User, X, Menu, Sun, Moon, 
-  Terminal, Activity, ArrowUpRight, Database
+  Terminal, Activity, Database
 } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import { useSession, signIn, signOut } from 'next-auth/react';
@@ -13,7 +13,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 // ==========================================
 // 1. RAW BRUTALIST BACKGROUND
 // ==========================================
-const BrutalistBackground = () => (
+const BrutalBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-0 bg-[#E5E5E5] dark:bg-[#0A0A0A] transition-colors duration-200">
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] mix-blend-difference pointer-events-none"></div>
   </div>
@@ -312,6 +312,7 @@ export default function AppContainer() {
           </motion.div>
         )}
       </AnimatePresence>
+      <SysTerminalModal state={aiModal} setState={setAiModal} />
     </div>
   );
 }
