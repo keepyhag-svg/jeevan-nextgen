@@ -1,36 +1,26 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-inter), sans-serif;
-  --font-serif: var(--font-playfair), serif;
+  /* Set Plus Jakarta Sans as the default body font */
+  --font-sans: var(--font-jakarta), sans-serif;
+  
+  /* Hijack the 'font-serif' class to use our massive Syne font for headers */
+  --font-serif: var(--font-syne), sans-serif;
 }
 
-/* --- LIGHT MODE (Premium Editorial / Millennial) --- */
-:root {
-  --background: #f7f7f5; /* Premium paper off-white */
-  --foreground: #111111; /* Rich ink black */
-  --border-color: rgba(0, 0, 0, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-}
-
-/* --- DARK MODE (Gen Z / Tech Vibe) --- */
-.dark {
-  --background: #050505; /* Deep pitch black */
-  --foreground: #ededed; /* Crisp white */
-  --border-color: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(10, 10, 10, 0.7);
-}
-
+/* Base resets to keep things clean */
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom utility classes to use throughout the app */
-.theme-border {
-  border-color: var(--border-color);
+/* Hide scrollbar for smooth horizontal scrolling sections */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-.theme-glass {
-  background-color: var(--glass-bg);
-  backdrop-filter: blur(16px);
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Plus_Jakarta_Sans, Syne } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+// The clean, modern body font
+const jakarta = Plus_Jakarta_Sans({ 
+  subsets: ["latin"], 
+  variable: "--font-jakarta" 
+});
+
+// The aggressive, geometric header font
+const syne = Syne({ 
+  subsets: ["latin"], 
+  variable: "--font-syne" 
+});
 
 export const metadata: Metadata = {
-  title: "Jeevan NextGen",
-  description: "The NextGen Assamese Magazine",
+  title: "JEEVAN | The Next-Gen Archive",
+  description: "Culture, Redefined.",
 };
 
 export default function RootLayout({
@@ -17,9 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // We add 'light' by default, but it can be toggled to 'dark'
-    <html lang="en" className="light">
-      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased transition-colors duration-500`}>
+    <html lang="en">
+      {/* Injecting both font variables into the body */}
+      <body className={`${jakarta.variable} ${syne.variable} font-sans antialiased`}>
         <SessionProvider>
           {children}
         </SessionProvider>

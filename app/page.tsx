@@ -4,205 +4,173 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import gsap from 'gsap';
 import { 
-  ArrowRight, User, X, Menu, Sun, Moon, 
-  Terminal, Activity, Database
+  Sparkles, ArrowRight, Home, User, 
+  X, Compass, PlayCircle, Zap, Moon, Sun, Flame
 } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import { useSession, signIn, signOut } from 'next-auth/react';
 
 // ==========================================
-// 1. RAW BRUTALIST BACKGROUND
+// 1. NEXT-GEN BACKGROUND (Midnight & Electric Violet)
 // ==========================================
-const BrutalBackground = () => (
-  <div className="fixed inset-0 pointer-events-none z-0 bg-[#E5E5E5] dark:bg-[#0A0A0A] transition-colors duration-200">
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] mix-blend-difference pointer-events-none"></div>
+const CyberBackground = () => (
+  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="absolute inset-0 bg-[#0B0B0C] transition-colors duration-500 light-mode:bg-[#F2F2F2]"></div>
+    <motion.div 
+      animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} 
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} 
+      className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-[#6200EE] rounded-full blur-[150px] mix-blend-screen opacity-30" 
+    />
+    <motion.div 
+      animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.2, 0.1] }} 
+      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} 
+      className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-[#CCFF00] rounded-full blur-[150px] mix-blend-screen opacity-10" 
+    />
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
   </div>
 );
 
 // ==========================================
-// 2. BULLETPROOF THEME TOGGLE & HEADER
+// 2. DYNAMIC BOTTOM DOCK
 // ==========================================
-const BrutalHeader = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Bulletproof Dark Mode Logic
-  useEffect(() => {
-    setMounted(true);
-    const root = document.documentElement;
-    const isDarkSet = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (isDarkSet) {
-      root.classList.add('dark');
-      setIsDark(true);
-    } else {
-      root.classList.remove('dark');
-      setIsDark(false);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    if (root.classList.contains('dark')) {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDark(false);
-    } else {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDark(true);
-    }
-  };
-
-  const navLinks = ['INDEX', 'SYSTEM_CURATED', 'DATABASE', 'ID_LOGIN'];
+const DynamicDock = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => {
+  const tabs = [
+    { id: 'Home', icon: Home, label: 'Feed' },
+    { id: 'Explore', icon: Compass, label: 'Discover' },
+    { id: 'Jeevan AI', icon: Sparkles, label: 'AI Hub' },
+    { id: 'Profile', icon: User, label: 'ID' },
+  ];
 
   return (
-    <>
-      <header className="fixed top-0 left-0 right-0 z-[90] bg-[#E5E5E5] dark:bg-[#0A0A0A] border-b-4 border-black dark:border-white flex items-center justify-between px-6 py-4 transition-colors duration-200">
-        <div 
-          onClick={() => setActiveTab('INDEX')}
-          className="text-4xl md:text-5xl font-black tracking-tighter cursor-pointer text-black dark:text-white uppercase leading-none"
-        >
-          JEEVAN<span className="text-[#FF2A2A]">_</span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          {mounted && (
-            <button 
-              onClick={toggleTheme}
-              className="w-12 h-12 border-2 border-black dark:border-white flex items-center justify-center text-black dark:text-white bg-white dark:bg-black hover:bg-[#FF2A2A] hover:text-white dark:hover:bg-[#FF2A2A] transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
+    <motion.div 
+      initial={{ y: 100 }} animate={{ y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]"
+    >
+      <div className="bg-white/10 light-mode:bg-black/10 backdrop-blur-2xl border border-white/10 light-mode:border-black/10 p-2 rounded-[2rem] flex items-center gap-2 shadow-[0_0_40px_rgba(98,0,238,0.15)]">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 ${isActive ? 'text-black bg-[#CCFF00] shadow-[0_0_20px_rgba(204,255,0,0.4)]' : 'text-white/60 light-mode:text-black/60 hover:text-white light-mode:hover:text-black hover:bg-white/5'}`}
             >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              <Icon size={20} className={isActive ? 'animate-pulse' : ''} />
+              {isActive && (
+                <motion.span initial={{ width: 0, opacity: 0 }} animate={{ width: 'auto', opacity: 1 }} className="text-sm font-bold tracking-wide">
+                  {tab.label}
+                </motion.span>
+              )}
             </button>
-          )}
-
-          <button 
-            onClick={() => setIsOpen(true)}
-            className="w-12 h-12 border-2 border-black dark:border-white flex items-center justify-center bg-black dark:bg-white text-white dark:text-black hover:bg-[#FF2A2A] dark:hover:bg-[#FF2A2A] hover:text-white dark:hover:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
-          >
-            <Menu size={20} />
-          </button>
-        </div>
-      </header>
-
-      {/* Brutalist Fullscreen Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div 
-            initial={{ y: '-100%' }} animate={{ y: 0 }} exit={{ y: '-100%' }} transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-[150] bg-[#FF2A2A] flex flex-col p-6 text-black"
-          >
-            <div className="flex justify-between items-center w-full border-b-4 border-black pb-4">
-              <h2 className="text-4xl font-black tracking-tighter">NAVIGATE_</h2>
-              <button onClick={() => setIsOpen(false)} className="w-12 h-12 border-2 border-black flex items-center justify-center bg-white hover:bg-black hover:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-6 mt-16">
-              {navLinks.map((link) => (
-                <div key={link} className="overflow-hidden">
-                  <motion.button 
-                    initial={{ y: 100 }} animate={{ y: 0 }}
-                    onClick={() => { setActiveTab(link); setIsOpen(false); }}
-                    className="text-6xl md:text-8xl font-black tracking-tighter uppercase text-left hover:pl-8 transition-all hover:text-white"
-                  >
-                    {link}
-                  </motion.button>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
-
-// ==========================================
-// 3. BRUTALIST HERO
-// ==========================================
-const BrutalHero = ({ featuredArticle }: { featuredArticle: any }) => {
-  return (
-    <div className="w-full pt-32 pb-12 px-6 border-b-4 border-black dark:border-white">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-[12vw] leading-[0.8] font-black tracking-tighter uppercase text-black dark:text-white mb-8 break-words">
-          ASSAM <br />
-          <span className="text-transparent bg-clip-text" style={{ WebkitTextStroke: '2px currentColor' }}>UNCUT.</span>
-        </h1>
-        
-        {featuredArticle && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-4 border-black dark:border-white bg-white dark:bg-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] p-4 md:p-8 relative">
-            <div className="absolute top-0 right-0 bg-[#FF2A2A] text-black font-black uppercase tracking-widest text-xs py-2 px-4 border-l-4 border-b-4 border-black dark:border-white">
-              LEAD_STORY
-            </div>
-            <div className="w-full h-[40vh] md:h-[50vh] border-2 border-black dark:border-white overflow-hidden">
-              <img src={featuredArticle.imageUrl || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000"} alt="Featured" className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-500" />
-            </div>
-            <div className="flex flex-col justify-end pt-4">
-              <h2 className="text-4xl md:text-5xl font-black leading-none tracking-tighter uppercase mb-6 text-black dark:text-white">{featuredArticle.title}</h2>
-              <div className="flex items-center gap-4 mt-auto">
-                <span className="bg-black dark:bg-white text-white dark:text-black font-black uppercase text-xs px-6 py-3 border-2 border-black dark:border-white hover:bg-[#FF2A2A] hover:text-black transition-colors">
-                  READ_DATA
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// 4. THE GRID
-// ==========================================
-const BrutalFeed = ({ articles, onRead, onSummarize }: { articles: any[], onRead: (a: any) => void, onSummarize: (a: any, e: React.MouseEvent) => void }) => {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full relative z-10 pb-32">
-      <BrutalHero featuredArticle={articles[0]} />
-
-      <div className="max-w-7xl mx-auto px-6 mt-16">
-        <h3 className="text-5xl font-black tracking-tighter uppercase mb-8 text-black dark:text-white border-b-4 border-black dark:border-white pb-4">INDEX_</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articles.slice(1).map((item, index) => (
-            <div 
-              key={item._id || index} 
-              className="border-4 border-black dark:border-white bg-white dark:bg-[#111] p-4 flex flex-col group cursor-pointer shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[-4px] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] transition-all" 
-              onClick={() => onRead(item)}
-            >
-              <div className="w-full h-64 border-2 border-black dark:border-white mb-4 overflow-hidden relative">
-                <div className="absolute top-2 left-2 bg-[#FF2A2A] text-black font-black text-[10px] uppercase px-2 py-1 border-2 border-black z-10">{item.category || "CULTURE"}</div>
-                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover grayscale contrast-150 group-hover:grayscale-0 transition-all duration-300" />
-              </div>
-              <h4 className="text-2xl font-black uppercase leading-none tracking-tighter mb-6 text-black dark:text-white">{item.title}</h4>
-              
-              <div className="mt-auto pt-4 border-t-4 border-black dark:border-white flex items-center justify-between">
-                <span className="text-[10px] font-black text-black dark:text-white uppercase tracking-widest">{item.authorName || "SYS_ADMIN"}</span>
-                <button 
-                  onClick={(e) => onSummarize(item, e)} 
-                  className="bg-black dark:bg-white text-white dark:text-black p-2 hover:bg-[#FF2A2A] dark:hover:bg-[#FF2A2A] hover:text-black transition-colors"
-                >
-                  <Terminal size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </motion.div>
   );
 };
 
 // ==========================================
-// MAIN APP CONTAINER
+// 3. TOP NAVIGATION (For You Toggle)
+// ==========================================
+const TopNav = ({ toggleTheme, isDark }: { toggleTheme: () => void, isDark: boolean }) => (
+  <nav className="fixed top-0 left-0 right-0 z-50 p-6 flex justify-between items-center">
+    <div className="text-2xl font-black tracking-tighter text-white light-mode:text-black">
+      JEEVAN<span className="text-[#CCFF00]">.</span>
+    </div>
+    
+    <div className="bg-white/5 light-mode:bg-black/5 backdrop-blur-xl border border-white/10 light-mode:border-black/10 rounded-full p-1 flex">
+      <button className="px-4 py-1.5 rounded-full bg-[#6200EE] text-white text-xs font-bold shadow-[0_0_15px_rgba(98,0,238,0.5)]">For You</button>
+      <button className="px-4 py-1.5 rounded-full text-white/50 light-mode:text-black/50 text-xs font-bold hover:text-white light-mode:hover:text-black transition-colors">Global</button>
+    </div>
+
+    <button 
+      onClick={toggleTheme} 
+      className="w-10 h-10 rounded-full bg-white/10 light-mode:bg-black/10 backdrop-blur-xl border border-white/10 light-mode:border-black/10 flex items-center justify-center text-white light-mode:text-black hover:bg-[#CCFF00] hover:text-black transition-all"
+    >
+      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  </nav>
+);
+
+// ==========================================
+// 4. BENTO BOX FEED
+// ==========================================
+const BentoFeed = ({ articles, onRead, onSummarize }: { articles: any[], onRead: (a: any) => void, onSummarize: (a: any, e: React.MouseEvent) => void }) => {
+  return (
+    <div className="w-full relative z-10 pt-32 pb-40 max-w-7xl mx-auto px-6">
+      
+      {/* Vibe Tags */}
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar mb-10 pb-4">
+        {['#CoreCore', '#AssameseHeritage', '#CyberpunkRealism', '#PoetryDrops', '#HustleInfotainment'].map(tag => (
+          <span key={tag} className="px-4 py-2 rounded-xl bg-white/5 light-mode:bg-black/5 backdrop-blur-md border border-white/10 light-mode:border-black/10 text-white/80 light-mode:text-black/80 text-xs font-bold whitespace-nowrap cursor-pointer hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Featured Hero Bento */}
+        {articles[0] && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            className="md:col-span-2 md:row-span-2 relative group cursor-pointer rounded-[2rem] overflow-hidden border border-white/10 light-mode:border-black/10 shadow-2xl h-[50vh] md:h-auto"
+            onClick={() => onRead(articles[0])}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C] via-transparent to-transparent z-10" />
+            <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.8 }} src={articles[0].imageUrl} className="w-full h-full object-cover" />
+            
+            <div className="absolute bottom-0 left-0 w-full p-8 z-20">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 rounded-lg bg-[#CCFF00] text-black text-[10px] font-black uppercase tracking-wider shadow-[0_0_20px_rgba(204,255,0,0.4)]">Hot Drop</span>
+                <span className="text-white/80 text-xs font-bold flex items-center gap-1"><Flame size={14}/> Trending</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-4 group-hover:text-[#CCFF00] transition-colors">{articles[0].title}</h2>
+              <div className="flex items-center justify-between mt-6">
+                 <span className="text-white/60 text-sm font-medium">By {articles[0].authorName}</span>
+                 <button onClick={(e) => onSummarize(articles[0], e)} className="p-3 bg-white/10 backdrop-blur-xl rounded-xl hover:bg-[#6200EE] transition-colors text-white">
+                   <Zap size={20} />
+                 </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Smaller Bento Cards */}
+        {articles.slice(1).map((item, index) => (
+          <motion.div 
+            key={item._id || index}
+            initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+            className="relative group cursor-pointer rounded-[2rem] overflow-hidden border border-white/10 light-mode:border-black/10 bg-white/5 light-mode:bg-black/5 backdrop-blur-xl h-64 md:h-80 flex flex-col"
+            onClick={() => onRead(item)}
+          >
+            <div className="h-1/2 w-full overflow-hidden relative">
+              <motion.img whileHover={{ scale: 1.1 }} src={item.imageUrl} className="w-full h-full object-cover" />
+            </div>
+            <div className="p-6 flex flex-col flex-1 justify-between">
+              <h3 className="text-xl font-bold text-white light-mode:text-black leading-tight line-clamp-3 group-hover:text-[#6200EE] transition-colors">{item.title}</h3>
+              <div className="flex items-center justify-between mt-4">
+                 <span className="text-[#CCFF00] text-xs font-bold uppercase tracking-widest flex items-center gap-1">Read <ArrowRight size={14}/></span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// MAIN APP CONTAINER (With Local Theme State)
 // ==========================================
 export default function AppContainer() {
-  const [activeTab, setActiveTab] = useState('INDEX');
+  const [activeTab, setActiveTab] = useState('Home');
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null); 
   const [aiModal, setAiModal] = useState({ isOpen: false, isLoading: false, text: "", title: "" });
+  
+  // Local theme state to bypass Next.js hydration issues entirely
+  const [isDark, setIsDark] = useState(true); 
   
   const { data: session, status } = useSession();
   const isLoaded = status !== "loading";
@@ -225,11 +193,7 @@ export default function AppContainer() {
     
     const rawTextBlocks = article.englishBody || article.body;
     const fullText = rawTextBlocks?.map((block: any) => block.children?.[0]?.text).join(" ") || "";
-    
-    if (!fullText) {
-      setAiModal({ isOpen: true, isLoading: false, text: "ERR_NO_DATA", title: article.title });
-      return;
-    }
+    if (!fullText) return setAiModal({ isOpen: true, isLoading: false, text: "No data available.", title: article.title });
 
     try {
       const res = await fetch('/api/summarize', {
@@ -239,114 +203,113 @@ export default function AppContainer() {
       });
       const data = await res.json();
       if (res.ok && data.summary) setAiModal({ isOpen: true, isLoading: false, text: data.summary, title: article.title });
-      else setAiModal({ isOpen: true, isLoading: false, text: `SYS_ERR_FAILED`, title: article.title });
+      else setAiModal({ isOpen: true, isLoading: false, text: `ERROR: Failed to generate.`, title: article.title });
     } catch (error: any) {
-       setAiModal({ isOpen: true, isLoading: false, text: `NET_ERR_DISCONNECT`, title: article.title });
+       setAiModal({ isOpen: true, isLoading: false, text: `NETWORK ERROR`, title: article.title });
     }
   };
 
   if (selectedArticle) {
     return (
-      <div className="relative">
-        <button onClick={() => setSelectedArticle(null)} className="fixed top-24 left-6 md:left-12 z-[110] bg-white dark:bg-black border-4 border-black dark:border-white w-14 h-14 flex items-center justify-center hover:bg-[#FF2A2A] hover:text-black text-black dark:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-          <ArrowRight size={24} className="rotate-180" />
-        </button>
-        <BrutalHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-        <BrutalArticle article={selectedArticle} onSummarize={handleGenerateSummary} />
-        <SysTerminalModal state={aiModal} setState={setAiModal} />
+      <div className={isDark ? "dark" : "light-mode"}>
+        <div className="relative min-h-screen bg-[#0B0B0C] light-mode:bg-[#F2F2F2] text-white light-mode:text-black transition-colors duration-500">
+          <button onClick={() => setSelectedArticle(null)} className="fixed top-8 left-6 md:left-12 z-[110] bg-white/10 light-mode:bg-black/10 backdrop-blur-xl border border-white/20 light-mode:border-black/20 w-12 h-12 rounded-full flex items-center justify-center hover:bg-[#CCFF00] hover:text-black transition-all">
+            <ArrowRight size={20} className="rotate-180" />
+          </button>
+          <AestheticArticle article={selectedArticle} onSummarize={handleGenerateSummary} />
+          <AISliderModal state={aiModal} setState={setAiModal} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#E5E5E5] dark:bg-[#0A0A0A] text-black dark:text-white font-sans transition-colors duration-200 overflow-x-hidden selection:bg-[#FF2A2A] selection:text-black">
-      <BrutalBackground />
-      <BrutalHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-      
-      <AnimatePresence mode="wait">
-        {activeTab === 'INDEX' && <BrutalFeed key="home" articles={articles} onRead={setSelectedArticle} onSummarize={handleGenerateSummary} />}
+    // We apply the theme class to a wrapper div to bypass HTML hydration bugs
+    <div className={isDark ? "dark" : "light-mode"}>
+      <div className="min-h-screen font-sans transition-colors duration-500 overflow-x-hidden text-white light-mode:text-black">
+        <CyberBackground />
+        <TopNav toggleTheme={() => setIsDark(!isDark)} isDark={isDark} />
         
-        {activeTab === 'SYSTEM_CURATED' && (
-          <motion.div key="discover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center min-h-screen relative z-10 px-6 text-center pt-20">
-            <Activity size={64} className="mb-8 text-[#FF2A2A]" />
-            <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-6 border-b-8 border-black dark:border-white pb-4">SYS_CURATED</h1>
-            <p className="text-xl font-bold uppercase tracking-widest max-w-md">Algorithm compiling visual data.</p>
-          </motion.div>
-        )}
-        
-        {activeTab === 'DATABASE' && (
-          <motion.div key="archive" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center min-h-screen relative z-10 px-6 text-center pt-20">
-            <Database size={64} className="mb-8 text-black dark:text-white" />
-            <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-6 border-b-8 border-black dark:border-white pb-4">DATABASE_</h1>
-            <p className="text-xl font-bold uppercase tracking-widest max-w-md">Accessing historical records. Standby.</p>
-          </motion.div>
-        )}
+        <AnimatePresence mode="wait">
+          {activeTab === 'Home' && <BentoFeed key="home" articles={articles} onRead={setSelectedArticle} onSummarize={handleGenerateSummary} />}
+          
+          {activeTab === 'Explore' && (
+            <motion.div key="discover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center min-h-screen relative z-10 px-6 text-center">
+              <PlayCircle size={64} className="mb-8 text-[#6200EE]" />
+              <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4">Discover Hub</h1>
+              <p className="text-lg font-medium text-white/60 light-mode:text-black/60 max-w-md">Micro-learning stories and immersive video content coming soon.</p>
+            </motion.div>
+          )}
 
-        {activeTab === 'ID_LOGIN' && (
-          <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center min-h-screen px-6 relative z-10 pt-20">
-            <div className="w-full max-w-md bg-white dark:bg-[#111] border-4 border-black dark:border-white p-8 md:p-12 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] text-center relative">
-              <div className="absolute top-0 left-0 bg-black dark:bg-white text-white dark:text-black font-black uppercase text-[10px] px-2 py-1">AUTH_REQ</div>
-              {!isLoaded ? (
-                <p className="animate-pulse font-black uppercase tracking-widest text-xl mt-8">PINGING_SERVER...</p>
-              ) : !isSignedIn ? (
-                <>
-                  <h2 className="text-5xl font-black uppercase tracking-tighter mb-4 mt-4">ID_LOGIN</h2>
-                  <p className="text-black/60 dark:text-white/60 text-xs font-bold uppercase tracking-widest mb-10">Authenticate to access system terminal.</p>
-                  <button onClick={() => signIn()} className="w-full bg-[#FF2A2A] text-black border-4 border-black dark:border-white py-4 font-black tracking-widest uppercase text-lg hover:bg-black hover:text-white transition-colors">
-                    EXEC_LOGIN
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="w-24 h-24 border-4 border-black dark:border-white mx-auto mb-6 bg-[#E5E5E5] dark:bg-[#0A0A0A] overflow-hidden mt-4">
-                     {session.user?.image ? <img src={session.user.image} alt="Profile" className="w-full h-full object-cover grayscale" /> : <User size={48} className="m-auto mt-4"/>}
-                  </div>
-                  <h2 className="text-3xl font-black uppercase tracking-tighter mb-2">{session.user?.name}</h2>
-                  <p className="text-[#FF2A2A] text-xs font-bold uppercase tracking-widest mb-10">{session.user?.email}</p>
-                  <button onClick={() => signOut()} className="w-full py-4 border-4 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black hover:bg-[#FF2A2A] dark:hover:bg-[#FF2A2A] hover:text-black dark:hover:text-black font-black tracking-widest uppercase text-lg transition-colors">
-                    SYS_LOGOUT
-                  </button>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <SysTerminalModal state={aiModal} setState={setAiModal} />
+          {activeTab === 'Profile' && (
+            <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center min-h-screen px-6 relative z-10">
+              <div className="w-full max-w-md bg-white/5 light-mode:bg-black/5 backdrop-blur-2xl border border-white/10 light-mode:border-black/10 p-10 rounded-[2rem] shadow-2xl text-center">
+                {!isLoaded ? (
+                  <p className="animate-pulse font-bold tracking-widest text-xs text-[#CCFF00]">Connecting to Web3...</p>
+                ) : !isSignedIn ? (
+                  <>
+                    <h2 className="text-4xl font-black tracking-tighter mb-4">Digital Identity</h2>
+                    <p className="text-white/60 light-mode:text-black/60 text-sm mb-10 leading-relaxed">Sign in to unlock your gamified reward loop, digital posters, and personalized shrine.</p>
+                    <button onClick={() => signIn()} className="w-full bg-[#6200EE] text-white py-4 rounded-2xl font-bold tracking-widest uppercase text-xs hover:bg-[#CCFF00] hover:text-black hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all">
+                      Authenticate
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-24 h-24 rounded-full mx-auto mb-6 p-1 bg-gradient-to-tr from-[#6200EE] to-[#CCFF00]">
+                       {session.user?.image ? <img src={session.user.image} alt="Profile" className="w-full h-full rounded-full object-cover" /> : <div className="w-full h-full bg-black rounded-full flex items-center justify-center"><User size={32}/></div>}
+                    </div>
+                    <h2 className="text-3xl font-black tracking-tighter mb-2">{session.user?.name}</h2>
+                    <p className="text-[#CCFF00] text-xs font-bold uppercase tracking-widest mb-10">{session.user?.email}</p>
+                    <button onClick={() => signOut()} className="w-full py-4 rounded-2xl border border-white/20 light-mode:border-black/20 hover:bg-white/10 font-bold tracking-widest uppercase text-xs transition-colors">
+                      Disconnect
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <DynamicDock activeTab={activeTab} setActiveTab={setActiveTab} />
+        <AISliderModal state={aiModal} setState={setAiModal} />
+      </div>
     </div>
   );
 }
 
 // ==========================================
-// AI SUMMARY MODAL (Terminal)
+// AI TL;DR SLIDER (Next-Gen Modal)
 // ==========================================
-const SysTerminalModal = ({ state, setState }: { state: any, setState: any }) => {
+const AISliderModal = ({ state, setState }: { state: any, setState: any }) => {
   if (!state.isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setState({ ...state, isOpen: false })} />
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="relative w-full max-w-2xl bg-black border-4 border-[#FF2A2A] p-6 sm:p-8 shadow-[12px_12px_0px_0px_rgba(255,42,42,0.4)]">
-        <button onClick={() => setState({ ...state, isOpen: false })} className="absolute top-4 right-4 text-[#FF2A2A] hover:bg-[#FF2A2A] hover:text-black border-2 border-[#FF2A2A] p-1 transition-colors"><X size={20}/></button>
+    <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setState({ ...state, isOpen: false })} />
+      <motion.div 
+        initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="relative w-full max-w-lg bg-[#0B0B0C]/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 shadow-[0_-20px_50px_rgba(98,0,238,0.2)] overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6200EE] to-[#CCFF00]" />
+        <button onClick={() => setState({ ...state, isOpen: false })} className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 p-2 rounded-full"><X size={20}/></button>
         
-        <div className="mb-6 border-b-2 border-[#FF2A2A]/30 pb-4">
-          <div className="flex items-center gap-2 text-[#FF2A2A] font-black uppercase tracking-widest text-xs mb-2">
-            <Terminal size={14} /> SYS_TERMINAL_DATA_EXTRACT
+        <div className="mb-6 flex items-center gap-4">
+          <div className="w-12 h-12 bg-[#CCFF00] rounded-2xl flex items-center justify-center text-black"><Sparkles size={24} /></div>
+          <div>
+            <h3 className="font-black text-2xl text-white">AI TL;DR</h3>
+            <p className="text-xs text-white/50 font-bold tracking-widest uppercase line-clamp-1">{state.title}</p>
           </div>
-          <p className="text-white font-black uppercase tracking-tighter text-2xl line-clamp-1">{state.title}</p>
         </div>
         
-        <div className="min-h-[150px] font-mono text-[#00FF41]">
+        <div className="min-h-[150px]">
           {state.isLoading ? (
-             <div className="flex flex-col items-start space-y-2 py-4">
-               <p className="animate-pulse">{'>'} INITIALIZING ALGORITHM...</p>
-               <p className="animate-pulse" style={{animationDelay: '0.2s'}}>{'>'} PARSING DATASET...</p>
-               <p className="animate-pulse" style={{animationDelay: '0.4s'}}>{'>'} STANDBY_</p>
+             <div className="flex flex-col items-center justify-center py-10">
+               <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="w-10 h-10 border-4 border-white/10 border-t-[#CCFF00] rounded-full mb-4" />
+               <p className="text-xs font-bold tracking-widest uppercase text-[#CCFF00] animate-pulse">Generating Summary...</p>
              </div>
           ) : (
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[#E5E5E5] text-sm leading-relaxed uppercase">
-               <span className="text-[#FF2A2A] font-bold">{'>'} OUTPUT: </span><br/><br/>
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-white/90 text-base leading-relaxed font-medium bg-white/5 p-6 rounded-2xl border border-white/5">
                {state.text}
-               <span className="animate-pulse inline-block w-2 h-4 bg-[#FF2A2A] ml-1 align-middle"></span>
              </motion.div>
           )}
         </div>
@@ -356,9 +319,9 @@ const SysTerminalModal = ({ state, setState }: { state: any, setState: any }) =>
 };
 
 // ==========================================
-// BRUTALIST ARTICLE PAGE
+// AESTHETIC ARTICLE PAGE
 // ==========================================
-function BrutalArticle({ article, onSummarize }: { article: any, onSummarize: (article: any) => void }) {
+function AestheticArticle({ article, onSummarize }: { article: any, onSummarize: (article: any) => void }) {
   const [language, setLanguage] = useState<'AS' | 'EN'>('AS');
   const { scrollYProgress } = useScroll();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
@@ -369,37 +332,45 @@ function BrutalArticle({ article, onSummarize }: { article: any, onSummarize: (a
   const currentBody = showEnglish ? article.englishBody : article.body;
 
   return (
-    <div className="min-h-screen pt-32 pb-32 z-10 bg-[#E5E5E5] dark:bg-[#0A0A0A]">
-      <motion.div style={{ scaleX }} className="fixed top-[84px] left-0 right-0 h-2 bg-[#FF2A2A] origin-left z-[100]" />
+    <div className="min-h-screen pt-32 pb-40 z-10">
+      <motion.div style={{ scaleX }} className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#6200EE] to-[#CCFF00] origin-left z-[100]" />
       
-      <div className="max-w-4xl mx-auto px-6 mb-12 flex justify-end">
-        <div className="flex border-4 border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-          <button onClick={() => setLanguage('AS')} className={`px-6 py-2 text-xs font-black tracking-widest uppercase border-r-4 border-black dark:border-white transition-colors ${language === 'AS' ? 'bg-[#FF2A2A] text-black' : 'text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10'}`}>AS_</button>
-          <button onClick={() => setLanguage('EN')} className={`px-6 py-2 text-xs font-black tracking-widest uppercase transition-colors ${language === 'EN' ? 'bg-[#FF2A2A] text-black' : 'text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10'}`}>EN_</button>
-        </div>
-      </div>
-
       <main className="max-w-3xl mx-auto px-6">
-        <div className="bg-black dark:bg-white text-white dark:text-black inline-block px-4 py-1 font-black uppercase tracking-widest text-[10px] mb-6">
-          DATA_LOG: {article.publishedAt ? new Date(article.publishedAt).toISOString().split('T')[0] : 'UNKNOWN'}
+        {/* The AI TL;DR Slider Toggle (Visual Concept) */}
+        <div className="w-full bg-white/5 light-mode:bg-black/5 backdrop-blur-xl border border-white/10 light-mode:border-black/10 rounded-2xl p-2 mb-10 flex items-center justify-between">
+           <div className="flex items-center gap-3 px-4">
+             <Zap size={20} className="text-[#CCFF00]"/>
+             <span className="font-bold text-sm">AI Quick Read</span>
+           </div>
+           <button onClick={() => onSummarize(article)} className="px-6 py-2 bg-[#6200EE] hover:bg-[#CCFF00] hover:text-black transition-colors rounded-xl text-white text-xs font-bold uppercase tracking-widest">
+             Generate TL;DR
+           </button>
         </div>
-        
-        <h1 className="text-5xl md:text-6xl lg:text-8xl font-black leading-none tracking-tighter uppercase mb-12 text-black dark:text-white break-words">
+
+        <h1 className="text-4xl md:text-6xl font-black leading-[1.1] tracking-tighter mb-10">
            {currentTitle}
         </h1>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 py-6 border-y-4 border-black dark:border-white mb-16">
-          <div className="flex flex-col">
-               <h4 className="font-black text-xl uppercase tracking-tighter text-black dark:text-white">AUTH: {article.authorName || 'SYS_USER'}</h4>
+        <div className="flex items-center justify-between pb-8 mb-10 border-b border-white/10 light-mode:border-black/10">
+          <div className="flex items-center gap-4">
+             <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#6200EE] to-[#CCFF00] p-0.5">
+               <div className="w-full h-full bg-[#0B0B0C] rounded-full flex items-center justify-center text-xs font-bold">AS</div>
+             </div>
+             <div>
+               <h4 className="font-bold text-sm uppercase tracking-widest">{article.authorName || 'Guest Writer'}</h4>
+               <p className="text-white/50 light-mode:text-black/50 text-[10px] font-bold tracking-widest uppercase">{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recently Published'}</p>
+             </div>
           </div>
-          <button onClick={() => onSummarize(article)} className="flex items-center gap-2 px-6 py-3 border-4 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white hover:bg-[#FF2A2A] dark:hover:bg-[#FF2A2A] hover:text-black dark:hover:text-black transition-colors text-xs font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-            <Terminal size={16} /> EXTRACT_DATA
-          </button>
+          
+          <div className="bg-white/10 light-mode:bg-black/10 rounded-full p-1 flex">
+            <button onClick={() => setLanguage('AS')} className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${language === 'AS' ? 'bg-[#CCFF00] text-black shadow-lg' : 'text-white/50 light-mode:text-black/50'}`}>AS</button>
+            <button onClick={() => setLanguage('EN')} className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${language === 'EN' ? 'bg-[#CCFF00] text-black shadow-lg' : 'text-white/50 light-mode:text-black/50'}`}>EN</button>
+          </div>
         </div>
 
-        <div className="space-y-8 text-black dark:text-white text-xl md:text-2xl leading-snug font-bold">
+        <div className="space-y-8 text-white/90 light-mode:text-black/90 text-lg md:text-xl leading-[1.8] font-medium">
           <AnimatePresence mode="wait">
-            <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
               {currentBody?.map((block: any, index: number) => {
                 const text = block.children?.[0]?.text;
                 return <p key={index} className="mb-8">{text}</p>;
