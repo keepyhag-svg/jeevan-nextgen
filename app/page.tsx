@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'fra
 import gsap from 'gsap';
 import { 
   Sparkles, ArrowRight, Globe, Home, User as UserIcon, 
-  X, Compass, Flame, Menu, Sun, Moon, Instagram, Facebook, Twitter, BookOpen 
+  X, Compass, Flame, Menu, Sun, Moon, BookOpen 
 } from 'lucide-react';
 import { client } from '../sanity/lib/client'; 
 import { useSession, signIn, signOut } from 'next-auth/react';
@@ -95,9 +95,15 @@ const PremiumNav = ({ activeTab, setActiveTab }: { activeTab: string, setActiveT
               className="flex flex-col md:flex-row justify-between items-start md:items-center mt-auto pt-10 border-t border-black/10 dark:border-white/10 gap-8"
             >
               <div className="flex gap-8">
-                <a href="#" className="hover:opacity-50 transition-opacity flex items-center gap-2 text-sm font-bold uppercase tracking-widest"><Instagram size={18} /> Insta</a>
-                <a href="#" className="hover:opacity-50 transition-opacity flex items-center gap-2 text-sm font-bold uppercase tracking-widest"><Facebook size={18} /> FB</a>
-                <a href="#" className="hover:opacity-50 transition-opacity flex items-center gap-2 text-sm font-bold uppercase tracking-widest"><Twitter size={18} /> X</a>
+                <a href="#" className="hover:opacity-50 transition-opacity flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
+                  <Globe size={16} className="opacity-50" /> IG
+                </a>
+                <a href="#" className="hover:opacity-50 transition-opacity flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
+                  <Globe size={16} className="opacity-50" /> FB
+                </a>
+                <a href="#" className="hover:opacity-50 transition-opacity flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
+                  <Globe size={16} className="opacity-50" /> X
+                </a>
               </div>
 
               <button 
