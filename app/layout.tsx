@@ -20,7 +20,6 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    {/* Add suppressHydrationWarning here */}
     <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${syne.variable}`}>
       {/* We add the dark mode background and text colors to the body here */}
       <body className="antialiased bg-white text-black dark:bg-[#0B0B0C] dark:text-white font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-300">
